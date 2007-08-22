@@ -69,11 +69,13 @@ function parse_conf_file($file_path,$out = false){
 function write_conf_file($file,$config,$force=FALSE){
   if(! is_array($config))
     return FALSE;
+	$fileExist = file_exists($file);
 	# check if file exist or not
-  if( (! file_exists($file))&& (!$force) )
+	if( $fileExist && ! $force )
 		return FALSE;
+	$oldconf = $fileExist?file($file):null;
   # get the old config
-  if( (!is_array($oldconf = @file($file)))&& (!$force))
+  if( is_null($oldconf) && ! $force )
     return FALSE;
   # first rewrite old conf
   if(is_array($oldconf)){
