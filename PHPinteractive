@@ -1,0 +1,136 @@
+#!/usr/bin/php
+<?php
+/**
+* @author jonathan gotti <jgotti at the-ring dot homelinux dot net>
+* @licence LGPL
+* @since 2006-04-24
+* @changelog - 2006-10-10 - rewrite for PHP5
+*            - 2006-04-30 - add a saveonexit command line parameter
+*                         - save history even on a CTRL+D
+*            - 2006-04-27 - add history file support
+*                         - add an allerror option
+*/
+require 'libs/console_app/Console_app.php';
+
+$app = new console_app();
+$app->define_arg('include','i',false,'include file(s) before starting','check_inc',';');
+$app->define_flag('noprompt','P',FALSE,'Set this if you don\'t want the "PHP>>" prompt to appear');
+$app->define_flag('allerror','A',false,'Set error reporting to E_ALL');
+$app->define_flag('saveonexit',array('s','S'),TRUE,'Propose to save the script on closing');
+$app->define_flag('historyfile',array('hist','H'),TRUE,'set this flag if you want to save history across session (will only work if you have readline extension installed)');
+
+console_app::$lnOnRead = FALSE;
+console_app::$captureEOT = FALSE;
+$app->parse_args();
+
+if($app->get_arg('allerror'))
+  error_reporting(E_ALL);
+
+$prompt = $app->get_arg('noprompt')?'':'PHP>>';
+
+# enable completion
+if(console_app::$useReadline){
+  readline_completion_function('mycompletion');
+  # manage history file
+  if($app->get_arg('historyfile')){
+    $history_file = $_SERVER['HOME'].'/.PHPinteractive_history';
+    # $history_file = '~/.PHPinteractive_history';
+    if(is_file($history_file))
+      readline_read_history($history_file);
+  }
+}
+$_script_ = '';
+
+# make includes if needed
+if(is_array($incs = $app->get_arg('include'))){
+    foreach($incs as $inc){
+        include($inc);
+        $_script_ .= "include('$inc');\n";
+    }
+}
+
+# do the job
+while(true){
+		$cmd = read_until(';');
+    if( $cmd === FALSE){
+      if(isset($history_file)) # dump history to file if needed
+        save_history($history_file);
+      break;
+    }
+    eval($cmd);
+    $_script_ .= $cmd;
+}
+
+# propose to save the script to a file
+if($app->get_arg('saveonexit') && $_script_ && console_app::msg_confirm('do you want to save this session as a php script')){
+    $fileout = console_app::read("file to save the script\n");
+    $savemode = 'w';
+    if(is_file($fileout)){
+        if(console_app::msg_confirm("$fileout already exists !\nDo you want to append the script to the end of the file? (no will overwrite)"))
+            $savemode = 'a';
+    }
+    $f = fopen($fileout,$savemode);
+    fwrite($f,"<?php\n$_script_\n?>\n");
+    fclose($f);
+}
+
+function save_history($history_file){
+  global $app;
+  # dump history to file if needed
+  if(! readline_write_history($history_file) ){
+    console_app::msg_error("Can't write history file");
+  }
+  # nettoyage de l'historique
+  $hist = readline_list_history();
+  if( ($histsize = count($hist)) > $_SERVER['HISTSIZE'] ){
+    $hist = array_slice($hist, $histsize - $_SERVER['HISTSIZE']);
+    if(! $fhist = fopen($history_file,'w') ){
+      console_app::msg_error("Can't open history file");
+    }else{
+      fwrite($fhist,implode("\n",$hist));
+      fclose($fhist);
+    }
+  }
+}
+
+function read_until($waitchar=';'){
+  global $app,$prompt;
+  $buff='';$i=0;
+    while(true){
+        $query = console_app::read($i++<1?$prompt:'',null,FALSE);
+        # on doit regarder si ce n'est pas le dbut d'un bloc de code
+        if( $query===FALSE )
+          return FALSE;
+        if( $_nbac = substr_count($query,'{') ){
+					if( substr_count($query,'}') != $_nbac)
+	          $query .= read_until('}');
+        }
+        if( substr(trim($query),-1)==$waitchar )
+            break;
+        if($query == 'quit')
+            return FALSE;
+        $buff .= "$query\n";
+    }
+    return $buff."$query\n";
+}
+
+function mycompletion(){
+  $funcs = get_defined_functions();
+  return array_merge( get_declared_classes(),
+											$funcs['internal'] , $funcs['user'],
+                      array_keys($GLOBALS)
+										);
+}
+
+#### ARGUMENT VALIDATION FUNCTIONS ####
+function check_inc($inc){
+    if( !( is_array($inc) && count($inc)) )
+        return FALSE;
+    foreach($inc as $f){
+        if(! is_file($f) )
+            return FALSE;
+    }
+    return TRUE;
+}
+
+?>
