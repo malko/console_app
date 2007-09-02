@@ -10,7 +10,7 @@
 *            - 2006-04-27 - add history file support
 *                         - add an allerror option
 */
-require 'libs/console_app/Console_app.php';
+require dirname(__file__).'/class-console_app.php';
 
 $app = new console_app();
 $app->define_arg('include','i',false,'include file(s) before starting','check_inc',';');
@@ -38,6 +38,8 @@ if(console_app::$useReadline){
     if(is_file($history_file))
       readline_read_history($history_file);
   }
+	if(! isset($_SERVER['HISTSIZE']) )
+		$_SERVER['HISTSIZE'] = 1000;
 }
 $_script_ = '';
 
