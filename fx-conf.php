@@ -4,8 +4,9 @@
 * @copyleft (l) 2003-2004  Jonathan Gotti
 * @package config
 * @license http://opensource.org/licenses/gpl-license.php GNU Public License
-* @changelog - 2007-04-30 - bug correction regarding single quote escaped in values string
-*													- bug correction when saving some multiple multiline values containing '=' at certain position on a line (not the first).
+* @changelog - 2007-10-31 - now write_conf_file() keep empty lines.
+*            - 2007-04-30 - bug correction regarding single quote escaped in values string
+*                         - bug correction when saving some multiple multiline values containing '=' at certain position on a line (not the first).
 *            - 2007-04-26 - replace double quote strings with single quote string at eval time to avoid replacement of escaped values (ie: \[rnt....])
 *            - 2007-03-27 - change regexp in parse_conf_file() to better support multilines values (line ended by \)
 *            - 2005-09-30 - remove GUI_TYPE==GTK suppport
@@ -71,7 +72,7 @@ function write_conf_file($file,$config,$force=FALSE){
     return FALSE;
 	$fileExist = file_exists($file);
 	# check if file exist or not
-	if( $fileExist && ! $force )
+	if( !( $fileExist || $force ) )
 		return FALSE;
 	$oldconf = $fileExist?file($file):null;
   # get the old config
@@ -101,6 +102,8 @@ function write_conf_file($file,$config,$force=FALSE){
         }
         if(! preg_match('!\\\\\s*\n$!',$line))
           $follow = FALSE;
+      }else{
+        $newconf[$linenb] = $line;
       }
       if( (! $follow) && @isset($config[$var]) )
         unset($config[$var]);
