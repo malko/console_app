@@ -9,7 +9,7 @@
 *                         - better consistency between args and flags help display
 *            - 2007-02-02 - display_help(false) can display help without exiting the app
 *            - 2007-01-26 - add static property noColorTag
-*            - 2007-01-24 - new dbg(), moveUp(), moveDown() methods 
+*            - 2007-01-24 - new dbg(), moveUp(), moveDown() methods
 *            - 2007-01-09 - new table style attribute maxwidth and some optimisation made in the styles operations
 *            - 2007-01-02 - styles for methods msg_*  are no located in static porperty console_app::$dflt_styles
 *            - 2006-12-06 - now console_app::read check for input strlen to avoid returning false or default value on '0' input
@@ -19,7 +19,7 @@
 *            - 2006-08-17 - new parameter $dfltIsYes for method msg_confirm()
 *            - 2006-05-10 - progress_bar() and refresh_progress_bar() now support array(msg,tag) as $msg parameter
 *            - 2006-05-04 - new parameters $styles and $return for console_app::print_table()
-*            - 2006-05-02 - now read will return false on CTRL+D if property _captureEOT is FALSE 
+*            - 2006-05-02 - now read will return false on CTRL+D if property _captureEOT is FALSE
 *            - 2006-04-26 - call of console_app::read() as a static method will now autodetect and use the readline extension
 *            - 2006-04-23 - now console_app::read() and console_app::msg_	read() even as a static method
 *            - 2006-04-16 - now console_app::get_arg() can also retrieve unknown_args ($console_app->get_arg(0))
@@ -29,11 +29,11 @@
 *                         - new methods progress_bar() and refresh_progress_bar()
 *            - 2006-04-13 - now you can use "\n" in args descriptions
 *                         - new method print_table() for table rendering
-*            - 2006-02-08 - remove some E_NOTICE on previously added readline support 
+*            - 2006-02-08 - remove some E_NOTICE on previously added readline support
 *            - 2006-02-03 - now can read multiple SHORT FLAG at once (ie: -AZEXC instead of -A -Z -E -X -C )
 *            - 2006-01-30 - some visual amelioration on the display_help
 *            - 2006-01-12 - new msg_read method
-*            - 2005-12-29 - now use STDIN/STDOUT/STDERR and add a fancyerror parameter 
+*            - 2005-12-29 - now use STDIN/STDOUT/STDERR and add a fancyerror parameter
 * @example
 * @code
 # set the app
@@ -51,7 +51,7 @@ if( $name =='' )
   $name = console_app::read("enter your name");
 
 # display a hello msg
-console_app::msg("Hello $name",'blue'); 
+console_app::msg("Hello $name",'blue');
 @endcode
 @todo add better support for numeric args to permit to define some help for them too and know them at all
 */
@@ -72,7 +72,7 @@ class console_app{
 	private $required_args;
 	private $required_flags;
 	/** is there a readline extension available or not */
-	public static $useReadline = FALSE; 
+	public static $useReadline = FALSE;
 	public static $lnOnRead = TRUE;
 	public static $captureEOT = TRUE; # exit on EndOfTransmission (CTRL+d)
 	/** Manage history file Require readline extension */
@@ -93,13 +93,13 @@ class console_app{
 			'askexitStr'=> 'press enter to continue anything else to exit.',
 		),
 		/** see styles param of print_table method for more detail (avoid setting anything else than 'noheader','nolines','dflt') */
-		'table'   => array( 
-			'nolines'  =>false,
-			'noheader' =>false,
-			'dflt'     =>null,
-			'headertag'=> 'reverse',
-			'hchr'     => '~',
-			'vchr'     => '|',
+		'table'         => array(
+			'nolines'     =>false,
+			'noheader'    =>false,
+			'dflt'        =>null,
+			'headertag'   => 'reverse',
+			'hchr'        => '~',
+			'vchr'        => '|',
 			#- 'pageAttrs'=> array(
 			#- 'first'    => array("<<",'bold|underline'),
 			#- 'prev'     => array("<",'bold|underline'),
@@ -111,12 +111,12 @@ class console_app{
 			#- ( commande de pagination: <<, <, nbpage, >, >>. commandes de tri: nomduchamp [asc|desc] )",
 			#- ),
 		),
-		'help' =>array( 
+		'help' =>array(
 			'msg'   => "-h or --help to display help",
-			'width' => 80 
+			'width' => 80
 		)
 	);
-	
+
 	public function __construct($historyfile=null,$autoDetectReadline=TRUE){
 		if($autoDetectReadline)
 			console_app::$useReadline = function_exists('readline');
@@ -158,7 +158,7 @@ class console_app{
 	* @param mixed  $sf       the short flag to use can be a string or an array
 	*                         if an array is used then the 1st value will set flag to true and the 2d to false
 	*                         if so a --no-flagname will be created too
-	* @param bool  $dflt      the default value for this flag leave null if this is a required flag 
+	* @param bool  $dflt      the default value for this flag leave null if this is a required flag
 	*                         (DON'T USE 'unset' ANYMORE to leave null a flag without setting him as required, SET IT TO FALSE will do the same)
 	* @param string $desc      description for the help screen
 	*/
@@ -188,7 +188,7 @@ class console_app{
 	/**
 	* set a unflag flag for$flagname
 	* @param string $flagname         flagname to set an unflag for
-	* @param string $unflagname       the unflag longname 
+	* @param string $unflagname       the unflag longname
 	* @param string $shortunflagname  the short unflag name
 	*/
 	public function define_unflag($flagname,$unflagname=null,$shortunflagname=null){
@@ -238,9 +238,9 @@ class console_app{
 	public function define_arg($longname,$shortname=null,$default=null,$desc='** no description available **',$valid_cb=null,$delim=null){
 		$this->known_args['--'.$longname] = $longname;
 		$this->_args[$longname] = array('longname'=>$longname,'desc'=>$desc);
-		if(! is_null($valid_cb) ) 
+		if(! is_null($valid_cb) )
 			$this->_args[$longname]['validation_callback'] = $valid_cb;
-		if(! is_null($delim) ) 
+		if(! is_null($delim) )
 			$this->_args[$longname]['delim'] = $delim;
 		if( is_null($default) ){
 			$this->required_args[] = $longname;
@@ -254,7 +254,7 @@ class console_app{
 		}
 	}
 	/**
-	* create and print the help page 
+	* create and print the help page
 	* @param int $exitcode default is 0 this mean normal exit status.
 	*                      you can pass FALSE to avoid exiting
 	*/
@@ -300,7 +300,7 @@ class console_app{
 				}
 			}
 		}
-		$max_len +=4; 
+		$max_len +=4;
 		$split = self::$dflt_styles['help']['width'];
 		$blank    = str_repeat(' ',$max_len);
 		$desclen  = max(10,$split-$max_len); # avoid bad settings
@@ -309,7 +309,7 @@ class console_app{
 			list($col1,$col2) = $row;
 			# print first col
 			fwrite(STDOUT,$col1.str_repeat(' ',max(0,strlen($blank)-strlen($col1))) );
-			# print 2d col	
+			# print 2d col
 			while(strlen($col2) > $desclen){
 				if( ($lnpos = strpos($col2,"\n")) !==false && $lnpos < $desclen){
 					fwrite(STDOUT,substr($col2,0,$lnpos)."\n$blank");
@@ -351,12 +351,12 @@ class console_app{
 		$argv = $_SERVER['argv'];
 		$argc = $_SERVER['argc'];
 		# exit if no args given
-		if(! $argc>1) 
+		if(! $argc>1)
 			return FALSE;
 		# we parse each args
 		for($i=1;$i<$argc;$i++){
 			$arg = $argv[$i];
-			if( in_array($arg,array('--help','-h')) ) # check for help 
+			if( in_array($arg,array('--help','-h')) ) # check for help
 				return $this->display_help(0);
 
 			if( substr($arg,0,1)!='-' ){ # not a flag or arg
@@ -370,7 +370,7 @@ class console_app{
 				if(! isset($argv[$i+1]) ) continue;
 				if(! isset($this->_args[$name]['delim']) )# unique value entry
 					$this->setted_args[$name] = isset($argv[++$i])?$argv[$i]:FALSE;
-				else # multiple value argument 
+				else # multiple value argument
 					$this->setted_args[$name] = split($this->_args[$name]['delim'],$argv[++$i]);
 				if(isset($this->_args[$name]['validation_callback'])){ # run optionnal validation callback
 					$cb_ret = call_user_func($this->_args[$name]['validation_callback'],$this->setted_args[$name]);
@@ -463,7 +463,7 @@ class console_app{
 				'bg_cyan'    => 46,  'bg_white'   => 47,
 			);
 		}
-		
+
 		if( self::$noColorTag ){
 			$str = $string;
 		}else{
@@ -483,7 +483,7 @@ class console_app{
 				$str = "\033[".(isset($codes[$tag])?$codes[$tag]:30).'m'.$string.$end;
 			}
 		}
-		
+
 		if(! $stdout)
 			return $str;
 		fwrite(STDOUT,"$str\n");
@@ -553,7 +553,7 @@ class console_app{
 	*                             %P will be replaced by the percent value
 	* @param array $style   permit you to custom the bar style array(done_style,todo_style)
 	*                       where (todo|done)_style can be a string (character) or an array( (str) char,(str) tag as in tagged_string)
-	* @param bool  $refresh set this to true if you want to erase last printed progress 
+	* @param bool  $refresh set this to true if you want to erase last printed progress
 	*                       (you mustn't have any output between this call and the last one to get it work properly)
 	*                       normaly you won't have to use this, use the helper methods refresh_progress_bar().
 	*/
@@ -561,7 +561,7 @@ class console_app{
 		static $pgdatas;
 		$args = array('val','msg','w','max','formatString','style');
 		foreach($args as $arg){
-			if( is_null($$arg) ) # set null args to previous values 
+			if( is_null($$arg) ) # set null args to previous values
 				$$arg = isset($pgdatas[$arg])?$pgdatas[$arg]:null;
 			else # keep trace for next call
 				$pgdatas[$arg] = $$arg;
@@ -599,19 +599,19 @@ class console_app{
 	/**
 	* print a 2D array as a table
 	* @param array $table
-	* @param array $styles list of tag/attributes for each table, rows or cells 
+	* @param array $styles list of tag/attributes for each table, rows or cells
 	*              * table level attributes are:
 	*                - (array)  width / maxwidth / dflt (list of attr by colid)
-	*                - (string) hchr / vchr / headertag / headers 
-	*                - (bool)   nolines / noheader 
+	*                - (string) hchr / vchr / headertag / headers
+	*                - (bool)   nolines / noheader
 	*              * row level attributes are:
 	*    	           - (string) dflt
 	*                - (bool)   noline
-	*              exemple: => array(rowid => array(colid=>'tag','dflt'=>'tag'),width=>array(colid=>'fixedwidth')) 
+	*              exemple: => array(rowid => array(colid=>'tag','dflt'=>'tag'),width=>array(colid=>'fixedwidth'))
 	*              - dflt can replace colid or rowid to define default rules
 	*              - you can explicitely set headers by adding 'headers=>array(colid=>'label');
 	*              - avoid automatic headers by adding a 'noheader'=>true
-	*              - avoid separating lines by adding 'nolines'=>true to $styles 
+	*              - avoid separating lines by adding 'nolines'=>true to $styles
 	*                or set it per row 'noline'=>true/false
 	*              - change the default headers style with 'headertag'=>'tag'
 	*              - change the chars used for drawing the table like this 'hchr'=>'_' and 'vchr'=>'!'
@@ -657,7 +657,7 @@ class console_app{
 			foreach( $table as $rowid => $row ){
 				$i=0;
 				foreach( $row as $colid => $cell ){
-					$horTable[$i][$rowid] = $cell; 
+					$horTable[$i][$rowid] = $cell;
 					$i++;
 				}
 			}
@@ -669,7 +669,7 @@ class console_app{
 			$headers = array_keys($table[0]);
 		}
 		**/
-		
+
 		# calc width and height for each cols and set default styles as needed
 		foreach($table as $rowid=>$row){
 
@@ -684,7 +684,7 @@ class console_app{
 			#- manage cols settings
 			foreach($row as $colid=>$col){
 				#- check dflt cols settings only once
-				if(! isset($colStyles[$colid]) ){ 
+				if(! isset($colStyles[$colid]) ){
 					$colStyles[$colid] = (!empty($styles['dflt'][$colid])?$styles['dflt'][$colid]:(!empty($styles['dflt']['dflt'])?$styles['dflt']['dflt']:null));
 					$fixWidths[$colid] = (!empty($styles['width'][$colid])?$styles['width'][$colid]:(!empty($styles['width']['dflt'])?$styles['width']['dflt']:null));
 					$maxWidths[$colid] = (!empty($styles['maxwidth'][$colid])?$styles['maxwidth'][$colid]:(!empty($styles['maxwidth']['dflt'])?$styles['maxwidth']['dflt']:null));
@@ -717,7 +717,7 @@ class console_app{
 		$strOut = '';
 		$hchr = substr($styles['hchr'],0,1);
 		$vchr = substr($styles['vchr'],0,1);
-		
+
 		foreach($table as $rid=>$row){ # each  table rows
 			if( ( empty($styles[$rid]['noline']) || $rid ==0 ) && $hchr)
 				$strOut .= str_repeat($hchr,$twidth)."\n"; # draw top row border
@@ -726,7 +726,7 @@ class console_app{
 			foreach($headers as $cid){
 				$col = isset($row[$cid])?explode("\n",$row[$cid]):'';
 				$colstyle = empty($styles[$rid][$cid])?(!empty($styles[$rid]['dflt'])?$styles[$rid]['dflt']:null):$styles[$rid][$cid];
-				# recompose each row line by line 
+				# recompose each row line by line
 				for($i=0;$i<$heights[$rid];$i++){
 					if(! isset($col[$i]) ){
 						$rowlines[$i][$cid] = str_repeat(' ',$widths[$cid]);
@@ -739,7 +739,7 @@ class console_app{
 			# print rows
 			for($i=0;$i<$heights[$rid];$i++){
 				$strRow = $vchr?"$vchr ".implode(" $vchr " ,$rowlines[$i])." $vchr":implode('  ',$rowlines[$i]);
-				$strOut .= (( $nbr==0 && $hasHeader)?console_app::tagged_string($strRow,$styles['headertag']):$strRow)."\n"; 
+				$strOut .= (( $nbr==0 && $hasHeader)?console_app::tagged_string($strRow,$styles['headertag']):$strRow)."\n";
 			}
 			$nbr++;
 		}
@@ -831,7 +831,7 @@ class console_app{
 		if( $useReadline ){
 			$read = readline($string);
 			if( $read === FALSE ){ # capture End Of Transmission (CTRL+D)
-				if( $captureEOT ) 
+				if( $captureEOT )
 					exit();
 				return FALSE;
 			}
@@ -847,13 +847,13 @@ class console_app{
 			# strip newline
 			$read = preg_replace('![\r\n]+$!','',$read);
 		}
-		
+
 		if($check_exit && $read =='exit'){
 			console_app::msg_info('execution stopped by user.');
 			exit(0);
 		}
-		
-		# check default value 
+
+		# check default value
 		if( (!strlen($read)) && !is_null($dflt))
 			return $dflt;
 		if( $useReadline )
@@ -863,7 +863,7 @@ class console_app{
 
 	/**
 	* debug function, print the structure of any variable
-	* @param mixed  $var 
+	* @param mixed  $var
 	* @param string $tag
 	* @param bool   $exit
 	* @deprecated use console_app::dbg() instead
@@ -926,7 +926,7 @@ class console_app{
 	*                             ie: array('CONFIG_PARAM'=>'PARAM_VALUE'[,...]);
 	* @param bool   $exitonerror  will stop the programm on error if set to true
 	* @return bool
-	* @require write_conf_file(),parse_conf_file() 
+	* @require write_conf_file(),parse_conf_file()
 	*/
 	public static function interactive_reconfigure($cfg_file,$cfg_template=null,$dflt_vals=null,$exitonerror=FALSE,$returnconf=FALSE){
 		require_once(dirname(__file__).'/fx-conf.php');

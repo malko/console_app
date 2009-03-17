@@ -83,7 +83,7 @@ function save_history($history_file){
     console_app::msg_error("Can't write history file");
   }
   # nettoyage de l'historique
-  $hist = readline_list_history();
+  $hist = file($history_file);
   if( ($histsize = count($hist)) > $_SERVER['HISTSIZE'] ){
     $hist = array_slice($hist, $histsize - $_SERVER['HISTSIZE']);
     if(! $fhist = fopen($history_file,'w') ){
