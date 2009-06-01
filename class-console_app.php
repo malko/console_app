@@ -82,9 +82,9 @@ class console_app{
 	public static $noColorTag = FALSE;
 	/** default styles for various methods */
 	public static $dflt_styles = array(
-		'info'    => array('blue|bold','::Info::',''),                 # tag / prefix / suffix
-		'error'   => array('red|bold','::ERROR::',''),                 # tag / prefix / suffix
-		'confirm' => array('brown|bold','::Confirmation::',"\nYes|No"),# tag / prefix / suffix
+		'info'    => array('blue','::Info::',''),                 # tag / prefix / suffix
+		'error'   => array('red','::ERROR::',''),                 # tag / prefix / suffix
+		'confirm' => array('brown','::Confirmation::',"\nYes|No"),# tag / prefix / suffix
 		/** dbg method default styles */
 		'dbg'     => array(
 			'tag'       => 'bold|red',
