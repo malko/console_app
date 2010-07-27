@@ -5,7 +5,9 @@
 * @since 2005-04-20
 * @author jonathan.gotti@free.fr
 * @licence LGPL
-* @changelog - 2007-05-31 - better support in display help for multiline parameter's descriptions
+* @changelog
+*            - 2010-07-20 - allow configurable console_app::msg_confirm() possible answers
+*            - 2007-05-31 - better support in display help for multiline parameter's descriptions
 *                         - better consistency between args and flags help display
 *            - 2007-02-02 - display_help(false) can display help without exiting the app
 *            - 2007-01-26 - add static property noColorTag
@@ -84,7 +86,7 @@ class console_app{
 	public static $dflt_styles = array(
 		'info'    => array('blue','::Info::',''),                 # tag / prefix / suffix
 		'error'   => array('red','::ERROR::',''),                 # tag / prefix / suffix
-		'confirm' => array('brown','::Confirmation::',"\nYes|No"),# tag / prefix / suffix
+		'confirm' => array('brown','::Confirmation::',"Yes|No"),# tag / prefix / suffix (suffix is also used as default answers yes|no )
 		/** dbg method default styles */
 		'dbg'     => array(
 			'tag'       => 'bold|red',
@@ -790,18 +792,27 @@ class console_app{
 	* @param string $msg
 	* @param string $tag optionnaly tagg the string as in tagged string
 	* @param bool   $dfltIsYes if true then the default value is yes instead of no
+	* @param string $answers yes|no replacement for example: allow|deny the yes response is always first response may be the first answer char or the full response
 	* @return bool
 	*/
-	public static function msg_confirm($msg,$tag=null,$dfltIsYes=FALSE){
-		$dflt= $dfltIsYes?'yes':'no';
-
+	public static function msg_confirm($msg,$tag=null,$dfltIsYes=FALSE,$answers=null){
 		list($tag_,$prefx,$sufx) = self::$dflt_styles['confirm'];
+
+		if( null === $answers)
+			$answers = $sufx;
+		list($yes,$no) = explode('|',$answers,2);
+		$dflt=$dfltIsYes?$yes:$no;
+
 		if(! $tag)
 			$tag = $tag_;
 
-		$msg = $prefx.$msg.$sufx." ($dflt)";
+		$msg = $prefx."$msg\n".
+			(console_app::tagged_string(substr($yes,0,1),'underline').substr($yes,1)
+				.'|'
+				.console_app::tagged_string(substr($no,0,1),'underline').substr($no,1)
+			)." ($dflt)";
 		$res = console_app::read($tag?console_app::tagged_string($msg,$tag):$msg,$dflt);
-		if(preg_match('!^[yo]([eu][si])?$!i',$res))
+		if(preg_match('!^['.substr($yes,0,1).']('.substr($yes,1).')?$!i',$res))
 			return TRUE;
 		else
 			return FALSE;
