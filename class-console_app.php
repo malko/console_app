@@ -21,7 +21,7 @@
 *            - 2006-08-17 - new parameter $dfltIsYes for method msg_confirm()
 *            - 2006-05-10 - progress_bar() and refresh_progress_bar() now support array(msg,tag) as $msg parameter
 *            - 2006-05-04 - new parameters $styles and $return for console_app::print_table()
-*            - 2006-05-02 - now read will return false on CTRL+D if property _captureEOT is FALSE
+*            - 2006-05-02 - now read will return false on CTRL+D if property _captureEOT is false
 *            - 2006-04-26 - call of console_app::read() as a static method will now autodetect and use the readline extension
 *            - 2006-04-23 - now console_app::read() and console_app::msg_	read() even as a static method
 *            - 2006-04-16 - now console_app::get_arg() can also retrieve unknown_args ($console_app->get_arg(0))
@@ -74,14 +74,14 @@ class console_app{
 	private $required_args;
 	private $required_flags;
 	/** is there a readline extension available or not */
-	public static $useReadline = FALSE;
-	public static $lnOnRead = TRUE;
-	public static $captureEOT = TRUE; # exit on EndOfTransmission (CTRL+d)
+	public static $useReadline = false;
+	public static $lnOnRead = true;
+	public static $captureEOT = true; # exit on EndOfTransmission (CTRL+d)
 	/** Manage history file Require readline extension */
 	public static $historyFile = null;
 	public static $historyMaxLen = 1000;
 	/** permit to easily remove tags from apps when this is not comfortable to use them. */
-	public static $noColorTag = FALSE;
+	public static $noColorTag = false;
 	/** default styles for various methods */
 	public static $dflt_styles = array(
 		'info'    => array('blue','::Info::',''),                 # tag / prefix / suffix
@@ -119,7 +119,7 @@ class console_app{
 		)
 	);
 
-	public function __construct($historyfile=null,$autoDetectReadline=TRUE){
+	public function __construct($historyfile=null,$autoDetectReadline=true){
 		if($autoDetectReadline)
 			console_app::$useReadline = function_exists('readline');
 		if($historyfile ){
@@ -149,7 +149,7 @@ class console_app{
 			return $this->setted_flags[$longname];
 		if( isset($this->unknown_args[$longname]) )
 			return $this->unknown_args[$longname];
-		return FALSE;
+		return false;
 	}
 	public function get_args(){
 		return array_merge($this->setted_args,$this->setted_flags,$this->unknown_args);
@@ -168,7 +168,7 @@ class console_app{
 		$this->known_flags['--'.$flagname] = $flagname;
 		# $this->flags[$flagname]['longname']= $name;
 		$this->flags[$flagname]['desc'] = $desc;
-		if($dflt==='unset') $dflt=FALSE; # this line is just here to handle old silly 'unset' value for old prog
+		if($dflt==='unset') $dflt=false; # this line is just here to handle old silly 'unset' value for old prog
 
 		# check for default value or set it as required
 		if( is_null($dflt) )
@@ -196,29 +196,29 @@ class console_app{
 	public function define_unflag($flagname,$unflagname=null,$shortunflagname=null){
 		if(! isset($this->flags[$flagname])){
 			console_app::msg_error('unflag set for non existing flag: '.$flagname);
-			return FALSE;
+			return false;
 		}
 		if(! is_null($unflagname))
 			$this->unflags['--'.$unflagname] = $flagname;
 		if(! is_null($shortunflagname))
 			$this->unflags['-'.$shortunflagname] = $flagname;
-		return TRUE;
+		return true;
 	}
-	public function set_flag($flag,$value=TRUE){
+	public function set_flag($flag,$value=true){
 		# try in known_flags
 		if( isset($this->knwon_flags[$flag]) ){
 			$this->setted_flags[$this->knwon_flags[$flag]] = $value;
-			return TRUE;
+			return true;
 		}
 		# try in unflags
 		if( isset($this->unflags[$flag]) ){
 			$this->setted_flags[$this->unflags[$flag]] =(bool) (! $value);
-			return TRUE;
+			return true;
 		}
 		#try as flagname
 		if(isset($this->flags[$flag])){
 			$this->setted_flags[$flag] = $value;
-			return TRUE;
+			return true;
 		}
 		return console_app::msg_error('Try to set an unknwon flag: '.$flag);
 	}
@@ -278,7 +278,7 @@ class console_app{
 				if( (! is_array($this->required_args))|| (! in_array($argname,$this->required_args)) )
 					$rows[$i][0] = "[".$rows[$i][0]."]";
 				$max_len     = max($max_len,strlen($rows[$i][0]));
-				$parsed_arg[$arg['longname']]=TRUE;
+				$parsed_arg[$arg['longname']]=true;
 			}
 		}
 		# Display help for flags
@@ -320,7 +320,7 @@ class console_app{
 				}
 				$last_isspace = (bool) preg_match('!\s!',$col2[$desclen-1]);
 				$next_isspace = (bool) preg_match('!\s!',$col2[$desclen]);
-				$next2_isspace= (bool) (isset($col2[$desclen+1])?preg_match('!\s!',$col2[$desclen+1]):TRUE);
+				$next2_isspace= (bool) (isset($col2[$desclen+1])?preg_match('!\s!',$col2[$desclen+1]):true);
 				if($last_isspace){
 					fwrite(STDOUT,substr($col2,0,$desclen)."\n$blank");
 					$col2 = substr($col2,$desclen);
@@ -354,7 +354,7 @@ class console_app{
 		$argc = $_SERVER['argc'];
 		# exit if no args given
 		if(! $argc>1)
-			return FALSE;
+			return false;
 		# we parse each args
 		for($i=1;$i<$argc;$i++){
 			$arg = $argv[$i];
@@ -371,26 +371,26 @@ class console_app{
 				# get his value
 				if(! isset($argv[$i+1]) ) continue;
 				if(! isset($this->_args[$name]['delim']) )# unique value entry
-					$this->setted_args[$name] = isset($argv[++$i])?$argv[$i]:FALSE;
+					$this->setted_args[$name] = isset($argv[++$i])?$argv[$i]:false;
 				else # multiple value argument
 					$this->setted_args[$name] = split($this->_args[$name]['delim'],$argv[++$i]);
 				if(isset($this->_args[$name]['validation_callback'])){ # run optionnal validation callback
 					$cb_ret = call_user_func($this->_args[$name]['validation_callback'],$this->setted_args[$name]);
-					if($cb_ret===FALSE){ # callback failed so display error message and then help
+					if($cb_ret===false){ # callback failed so display error message and then help
 						console_app::tagged_string("** '".$arg .' '.$argv[$i]."' Invalid value given for $name **",'red|bold',1);
 						if(! $dontDisplayHelp )
 							return $this->display_help(-1);
 						console_app::msg(self::$dflt_styles['help']['msg']);
 						exit(-1);
-					}elseif(! in_array($cb_ret,array(TRUE,NULL),TRUE) ){ # callback returned a value so we override user value with this one
+					}elseif(! in_array($cb_ret,array(true,null),true) ){ # callback returned a value so we override user value with this one
 						$this->setted_args[$name] = $cb_ret;     # get the args value
 					}
 				}
 			}elseif( isset($this->known_flags[$arg]) ){     # known flag
 				$name = $this->known_flags[$arg]; # get arg name
-				$this->setted_flags[$name] = TRUE;
+				$this->setted_flags[$name] = true;
 			}elseif( isset($this->unflags[$arg])){ # known unflag
-				$this->setted_flags[$this->unflags[$arg]] = FALSE;
+				$this->setted_flags[$this->unflags[$arg]] = false;
 			}else{ # unknown flag or args
 				$_arg = substr($arg,1);
 				if(isset($this->known_flags)){
@@ -398,7 +398,7 @@ class console_app{
 						if(! strlen($_arg) ) break;
 						$k=substr($k,1);
 						if( substr_count($_arg,$k) ){
-							$this->setted_flags[$v] = TRUE;
+							$this->setted_flags[$v] = true;
 							$_arg = str_replace($k,'',$_arg);
 						}
 					}
@@ -408,7 +408,7 @@ class console_app{
 						if(! strlen($_arg) ) break;
 						$k=substr($k,1);
 						if( substr_count($_arg,$k) ){
-							$this->setted_flags[$v] = FALSE;
+							$this->setted_flags[$v] = false;
 							$_arg = str_replace($k,'',$_arg);
 						}
 					}
@@ -425,14 +425,14 @@ class console_app{
 		if( is_array($this->required_args))
 			foreach($this->required_args as $arg){
 				if(! isset($this->setted_args[$arg]))
-					console_app::msg_error("** Missing required $arg parameter (".($this->_args[$arg]['short']?'-'.$this->_args[$arg]['short'].', ':'')."--$arg)**",TRUE);
+					console_app::msg_error("** Missing required $arg parameter (".($this->_args[$arg]['short']?'-'.$this->_args[$arg]['short'].', ':'')."--$arg)**",true);
 			}
 		if( is_array($this->required_flags) )
 			foreach($this->required_flags as $flag){
 			if(! isset($this->setted_flags[$flag]))
 				console_app::msg_error("** Missing required flag: $flag ("
 					.($this->flags[$flag]['short']?'-'.$this->flags[$flag]['short'].', ':'')
-					."--$flag) **",TRUE
+					."--$flag) **",true
 				);
 			}
 	}
@@ -442,7 +442,7 @@ class console_app{
 	* @param string $tag the tag identifier to use (like color name) multiple tags can be passed separated by '|'
 	* @param bool   $stdout if set to true then send string to stdout instead of return it
 	*/
-	public static function tagged_string($string,$tag='blink',$stdout=FALSE){
+	public static function tagged_string($string,$tag='blink',$stdout=false){
 		static $codes;
 
 		# define some escaped commands code
@@ -536,7 +536,7 @@ class console_app{
 	* @param string $msg       message to display if you want to replace the old one.
 	* @param bool   $dontclean if set to TRUE then won't replace previous displayed bar but just print at the end of the script
 	*/
-	public static function refresh_progress_bar($value,$msg=null,$dontclean=FALSE){
+	public static function refresh_progress_bar($value,$msg=null,$dontclean=false){
 		console_app::progress_bar($value,$msg,null,null,null,null,!$dontclean);
 	}
 
@@ -559,7 +559,7 @@ class console_app{
 	*                       (you mustn't have any output between this call and the last one to get it work properly)
 	*                       normaly you won't have to use this, use the helper methods refresh_progress_bar().
 	*/
-	public static function progress_bar($val,$msg=null,$max=100,$w=40,$formatString="%S\n\t%B %P %V/%M",$style=array(array('=','bold|green'),' '),$refresh=FALSE){
+	public static function progress_bar($val,$msg=null,$max=100,$w=40,$formatString="%S\n\t%B %P %V/%M",$style=array(array('=','bold|green'),' '),$refresh=false){
 		static $pgdatas;
 		$args = array('val','msg','w','max','formatString','style');
 		foreach($args as $arg){
@@ -620,9 +620,9 @@ class console_app{
 	*              - set width or maxwidth for cols (not a row attribute!)
 	* @param bool  $return if true then return the string instead of printing it to the screen
 	*/
-	public static function print_table($table,$styles=null,$return=FALSE){
+	public static function print_table($table,$styles=null,$return=false){
 		if(! (is_array($table)  && count($table)) )// && is_array($table[0]) ) )
-			return FALSE;
+			return false;
 		$table = array_values($table); # ensure that rows start on 0
 
 		#- manage headers for table with non numeric keys
@@ -630,7 +630,7 @@ class console_app{
 		$styles = (array) $styles+self::$dflt_styles['table'];
 
 		if(!empty($styles['noheader']) ){
-			$hasHeader = FALSE;
+			$hasHeader = false;
 		}else{
 			if( !empty($styles['headers']) ){
 				$headersLabel = $styles['headers'];
@@ -650,7 +650,7 @@ class console_app{
 				}
 				$styles = $tmpstyles;unset($tmpstyles);
 
-				$hasHeader = TRUE;
+				$hasHeader = true;
 			}
 		}
 		/** START OF FUTURE FEATURE TO REPRESENT THE TABLE HORIZONTALY INSTEAD OF VERTICALLY
@@ -767,24 +767,24 @@ class console_app{
 	public static function msg_info($msg){
 		list($tag,$prefx,$sufx) = self::$dflt_styles['info'];
 		console_app::msg($prefx.$msg.$sufx,$tag);
-		return FALSE;
+		return false;
 	}
 	/**
 	* display an error message
 	* @param string $msg
 	* @param bool   $fatal stop the script if set to yes
 	* @param int    $exitcode code to return on fatal error (-1 is default)
-	* @return FALSE
+	* @return false
 	*/
-	public static function msg_error($msg,$fatal=FALSE,$exitcode=-1){
+	public static function msg_error($msg,$fatal=false,$exitcode=-1){
 		list($tag,$prefx,$sufx) = self::$dflt_styles['error'];
-		$msg = console_app::tagged_string($prefx.($fatal?' FATAL ':'').$msg.$sufx,$tag,FALSE);
+		$msg = console_app::tagged_string($prefx.($fatal?' FATAL ':'').$msg.$sufx,$tag,false);
 		fwrite(STDERR,"$msg\n");
 		#- error_log($msg); # do this for Qaleo
 
 		if($fatal)
 			exit($exitcode);
-		return FALSE;
+		return false;
 	}
 
 	/**
@@ -795,7 +795,7 @@ class console_app{
 	* @param string $answers yes|no replacement for example: allow|deny the yes response is always first response may be the first answer char or the full response
 	* @return bool
 	*/
-	public static function msg_confirm($msg,$tag=null,$dfltIsYes=FALSE,$answers=null){
+	public static function msg_confirm($msg,$tag=null,$dfltIsYes=false,$answers=null){
 		list($tag_,$prefx,$sufx) = self::$dflt_styles['confirm'];
 
 		if( null === $answers)
@@ -813,15 +813,15 @@ class console_app{
 			)." ($dflt)";
 		$res = console_app::read($tag?console_app::tagged_string($msg,$tag):$msg,$dflt);
 		if(preg_match('!^['.substr($yes,0,1).']('.substr($yes,1).')?$!i',$res))
-			return TRUE;
+			return true;
 		else
-			return FALSE;
+			return false;
 	}
 
 	/**
 	* same as the read method but with the possibility to tagg the displayed message
 	*/
-	public static function msg_read($msg,$tag='blue',$dflt=null,$check_exit=TRUE){
+	public static function msg_read($msg,$tag='blue',$dflt=null,$check_exit=true){
 		return console_app::read(console_app::tagged_string($msg,$tag),$dflt,$check_exit);
 	}
 	/**
@@ -830,10 +830,10 @@ class console_app{
 	* @param string $dflt   valeur par defaut optionnelle,
 	*               si l'utilisateur ne saisie rien alors c'est la valeur par defaut qui sera retourné.
 	* @param bool   $check_exit if the user input exit on a read request the program default behaviour is to exit itelf
-	*                           you can disablle this feature by setting this to FALSE.
+	*                           you can disablle this feature by setting this to false.
 	* return string
 	*/
-	public static function read($string='Wait for input:',$dflt=null,$check_exit=TRUE){
+	public static function read($string='Wait for input:',$dflt=null,$check_exit=true){
 		$lnOnRead = console_app::$lnOnRead;
 		$useReadline = console_app::$useReadline;
 		$captureEOT = console_app::$captureEOT;
@@ -841,10 +841,10 @@ class console_app{
 			$string .= "\n";
 		if( $useReadline ){
 			$read = readline($string);
-			if( $read === FALSE ){ # capture End Of Transmission (CTRL+D)
+			if( $read === false ){ # capture End Of Transmission (CTRL+D)
 				if( $captureEOT )
 					exit();
-				return FALSE;
+				return false;
 			}
 		}else{
 			if($string) fwrite(STDOUT,$string);
@@ -853,7 +853,7 @@ class console_app{
 				if($captureEOT)
 					exit();
 				else
-					return FALSE;
+					return false;
 			}
 			# strip newline
 			$read = preg_replace('![\r\n]+$!','',$read);
@@ -879,7 +879,7 @@ class console_app{
 	* @param bool   $exit
 	* @deprecated use console_app::dbg() instead
 	*/
-	public static function show($var,$tag='bold|red',$exit=FALSE){
+	public static function show($var,$tag='bold|red',$exit=false){
 		$print_func = self::$dflt_styles['dbg']['print_func'];
 		console_app::tagged_string($print_func($var,1),$tag,1);
 		if($exit) exit;
@@ -939,7 +939,7 @@ class console_app{
 	* @return bool
 	* @require write_conf_file(),parse_conf_file()
 	*/
-	public static function interactive_reconfigure($cfg_file,$cfg_template=null,$dflt_vals=null,$exitonerror=FALSE,$returnconf=FALSE){
+	public static function interactive_reconfigure($cfg_file,$cfg_template=null,$dflt_vals=null,$exitonerror=false,$returnconf=false){
 		require_once(dirname(__file__).'/fx-conf.php');
 		console_app::msg("** Interactive Reconfigure -> $cfg_file **",'blue');
 
@@ -957,7 +957,7 @@ class console_app{
 		}
 
 		# parse template config
-		if( (! (isset($tpl_cfg) && is_array($tpl_cfg))) && ! is_array($tpl_cfg = parse_conf_file($cfg_template,TRUE)) )
+		if( (! (isset($tpl_cfg) && is_array($tpl_cfg))) && ! is_array($tpl_cfg = parse_conf_file($cfg_template,true)) )
 			return console_app::msg_error("Empty configuration file. Don't know what to configure",$exitonerror);
 
 		# user reconfigure
@@ -966,18 +966,18 @@ class console_app{
 				$v = $dflt_vals[$k];
 			$tpl_cfg[$k] = console_app::read("set '$k' ($v): ",$v);
 		}
-		if(! write_conf_file($cfg_file,$tpl_cfg,TRUE) )
+		if(! write_conf_file($cfg_file,$tpl_cfg,true) )
 			return console_app::msg_error("Can't write file : $cfg_file",$exitonerror);
 		fwrite(STDOUT,"configuration DONE.\n".str_repeat('-',70)."\n");
 		if($returnconf)
 			return $tpl_cfg;
-		return TRUE;
+		return true;
 	}
 
 	public static function save_history($histFile=null){
 		$histFile = is_null($histFile)? console_app::$historyFile : $histFile;
 		if(is_null($histFile))
-			return FALSE;
+			return false;
 		# dump history to file if needed
 		if(! readline_write_history($histFile) ){
 			return console_app::msg_error("Can't write to history file.");
