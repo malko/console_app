@@ -6,6 +6,7 @@
 * @author jonathan.gotti@free.fr
 * @licence LGPL
 * @changelog
+*            - 2010-09-10 - add own strlen method for better length calculation in rendering help or tables
 *            - 2010-07-20 - allow configurable console_app::msg_confirm() possible answers
 *            - 2007-05-31 - better support in display help for multiline parameter's descriptions
 *                         - better consistency between args and flags help display
@@ -277,7 +278,7 @@ class console_app{
 					.((isset($arg['delim']) && strlen($arg['delim']))?" multiple values can be separated by '$arg[delim]'":'');
 				if( (! is_array($this->required_args))|| (! in_array($argname,$this->required_args)) )
 					$rows[$i][0] = "[".$rows[$i][0]."]";
-				$max_len     = max($max_len,strlen($rows[$i][0]));
+				$max_len     = max($max_len,console_app::strlen($rows[$i][0]));
 				$parsed_arg[$arg['longname']]=true;
 			}
 		}
@@ -291,14 +292,14 @@ class console_app{
 				# is optional?
 				if( (! is_array($this->required_flags)) || (! in_array($flagname,$this->required_flags)) )
 					$rows[$i][0] = '['.$rows[$i][0].']';
-				$max_len       = max($max_len,strlen($rows[$i][0]));
+				$max_len       = max($max_len,console_app::strlen($rows[$i][0]));
 				# check for unflags
 				if( isset($this->unflags) && is_array($this->unflags) && $unflags = array_reverse(array_keys($this->unflags,$flagname))){
 					$rows[++$i][0] = implode(', ',$unflags);
 					$rows[$i][1]   = 'switch \''.$flagname.'\' to off.';
 					if( (!is_array($this->required_flags)) || (! in_array($flagname,$this->required_flags)) )
 						$rows[$i][0] = '['.$rows[$i][0].']';
-					$max_len      = max($max_len,strlen($rows[$i][0]));
+					$max_len      = max($max_len,console_app::strlen($rows[$i][0]));
 				}
 			}
 		}
@@ -310,9 +311,9 @@ class console_app{
 			if(is_string($row)){fwrite(STDOUT,$row);continue;} # echo single lines
 			list($col1,$col2) = $row;
 			# print first col
-			fwrite(STDOUT,$col1.str_repeat(' ',max(0,strlen($blank)-strlen($col1))) );
+			fwrite(STDOUT,$col1.str_repeat(' ',max(0,console_app::strlen($blank)-console_app::strlen($col1))) );
 			# print 2d col
-			while(strlen($col2) > $desclen){
+			while(console_app::strlen($col2) > $desclen){
 				if( ($lnpos = strpos($col2,"\n")) !==false && $lnpos < $desclen){
 					fwrite(STDOUT,substr($col2,0,$lnpos)."\n$blank");
 					$col2 = substr($col2,$lnpos+1);
@@ -607,7 +608,7 @@ class console_app{
 	*                - (string) hchr / vchr / headertag / headers
 	*                - (bool)   nolines / noheader
 	*              * row level attributes are:
-	*    	           - (string) dflt
+	*                - (string) dflt
 	*                - (bool)   noline
 	*              exemple: => array(rowid => array(colid=>'tag','dflt'=>'tag'),width=>array(colid=>'fixedwidth'))
 	*              - dflt can replace colid or rowid to define default rules
@@ -701,7 +702,7 @@ class console_app{
 					$table[$rowid][$colid] = $col = wordwrap($col,$w,"\n",true);
 					$widths[$colid] = $w;
 				}else{
-					$maxlen = max(array_map('strlen',explode("\n",$col)));
+					$maxlen = max(array_map(array('console_app','strlen'),explode("\n",$col)));
 					if( ($w = $maxWidths[$colid]) && $w < $maxlen){
 						$table[$rowid][$colid] = $col = wordwrap($col,$w,"\n",true);
 						$maxlen = $w;
@@ -734,14 +735,14 @@ class console_app{
 						$rowlines[$i][$cid] = str_repeat(' ',$widths[$cid]);
 					}else{
 						$cline = ($colstyle && ($nbr||!$hasHeader))?self::tagged_string($col[$i],$colstyle):$col[$i];
-						$rowlines[$i][$cid] = $cline.str_repeat(' ',max(0,$widths[$cid]-strlen($col[$i])));
+						$rowlines[$i][$cid] = $cline.str_repeat(' ',max(0,$widths[$cid]-console_app::strlen($col[$i])));
 					}
 				}
 			}
 			# print rows
 			for($i=0;$i<$heights[$rid];$i++){
 				$strRow = $vchr?"$vchr ".implode(" $vchr " ,$rowlines[$i])." $vchr":implode('  ',$rowlines[$i]);
-				$strOut .= (( $nbr==0 && $hasHeader)?console_app::tagged_string($strRow,$styles['headertag']):$strRow)."\n";
+				$strOut .= (( $nbr==0 && $hasHeader)?console_app::tagged_string($strRow,$styles['headertag']):str_replace("\r","",$strRow))."\n";
 			}
 			$nbr++;
 		}
@@ -842,18 +843,22 @@ class console_app{
 		if( $useReadline ){
 			$read = readline($string);
 			if( $read === false ){ # capture End Of Transmission (CTRL+D)
-				if( $captureEOT )
+				if( $captureEOT ){
+					fwrite(STDOUT,"\n");
 					exit();
+				}
 				return false;
 			}
 		}else{
 			if($string) fwrite(STDOUT,$string);
 			$read=fgets(STDIN,4096);
 			if(! strlen($read)){ # capture End Of Transmission (CTRL+D)
-				if($captureEOT)
+				if($captureEOT){
+					fwrite(STDOUT,"\n");
 					exit();
-				else
+				}else{
 					return false;
+				}
 			}
 			# strip newline
 			$read = preg_replace('![\r\n]+$!','',$read);
@@ -995,11 +1000,13 @@ class console_app{
 		}
 	}
 
+	public static function strlen($str,$countCarriageReturn=false){
+		return strlen(preg_replace("/[\x80-\xBF]|\033\[.*?m".($countCarriageReturn?'':'|\r')."/", '', $str));
+	}
+
 	public function __destruct(){
 		if(console_app::$useReadline){
 			console_app::save_history();
 		}
 	}
 }
-
-?>
