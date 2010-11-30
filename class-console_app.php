@@ -6,37 +6,38 @@
 * @author jonathan.gotti@free.fr
 * @licence LGPL
 * @changelog
-*            - 2010-09-10 - add own strlen method for better length calculation in rendering help or tables
-*            - 2010-07-20 - allow configurable console_app::msg_confirm() possible answers
-*            - 2007-05-31 - better support in display help for multiline parameter's descriptions
-*                         - better consistency between args and flags help display
-*            - 2007-02-02 - display_help(false) can display help without exiting the app
-*            - 2007-01-26 - add static property noColorTag
-*            - 2007-01-24 - new dbg(), moveUp(), moveDown() methods
-*            - 2007-01-09 - new table style attribute maxwidth and some optimisation made in the styles operations
-*            - 2007-01-02 - styles for methods msg_*  are no located in static porperty console_app::$dflt_styles
-*            - 2006-12-06 - now console_app::read check for input strlen to avoid returning false or default value on '0' input
-*            - 2006-11-27 - new styles parameter can be used for print_table (dflt row styles, width, headers, with or without lines...)
-*            - 2006-10-10 - rewrite for php5
-*                         - better support for history
-*            - 2006-08-17 - new parameter $dfltIsYes for method msg_confirm()
-*            - 2006-05-10 - progress_bar() and refresh_progress_bar() now support array(msg,tag) as $msg parameter
-*            - 2006-05-04 - new parameters $styles and $return for console_app::print_table()
-*            - 2006-05-02 - now read will return false on CTRL+D if property _captureEOT is false
-*            - 2006-04-26 - call of console_app::read() as a static method will now autodetect and use the readline extension
-*            - 2006-04-23 - now console_app::read() and console_app::msg_	read() even as a static method
-*            - 2006-04-16 - now console_app::get_arg() can also retrieve unknown_args ($console_app->get_arg(0))
-*            - 2006-04-15 - now auto add readline history if readline enable.
-*                         - new parameter _captureEOT to capture EndOfTransmission signal (CTRL+d)
-*            - 2006-04-14 - new property console_app::_lnOnRead to remove the automaticly added new line on read msg.
-*                         - new methods progress_bar() and refresh_progress_bar()
-*            - 2006-04-13 - now you can use "\n" in args descriptions
-*                         - new method print_table() for table rendering
-*            - 2006-02-08 - remove some E_NOTICE on previously added readline support
-*            - 2006-02-03 - now can read multiple SHORT FLAG at once (ie: -AZEXC instead of -A -Z -E -X -C )
-*            - 2006-01-30 - some visual amelioration on the display_help
-*            - 2006-01-12 - new msg_read method
-*            - 2005-12-29 - now use STDIN/STDOUT/STDERR and add a fancyerror parameter
+* - 2010-10-26 - dbg now work properly even when bufferisation is on
+* - 2010-09-10 - add own strlen method for better length calculation in rendering help or tables
+* - 2010-07-20 - allow configurable console_app::msg_confirm() possible answers
+* - 2007-05-31 - better support in display help for multiline parameter's descriptions
+*              - better consistency between args and flags help display
+* - 2007-02-02 - display_help(false) can display help without exiting the app
+* - 2007-01-26 - add static property noColorTag
+* - 2007-01-24 - new dbg(), moveUp(), moveDown() methods
+* - 2007-01-09 - new table style attribute maxwidth and some optimisation made in the styles operations
+* - 2007-01-02 - styles for methods msg_*  are no located in static porperty console_app::$dflt_styles
+* - 2006-12-06 - now console_app::read check for input strlen to avoid returning false or default value on '0' input
+* - 2006-11-27 - new styles parameter can be used for print_table (dflt row styles, width, headers, with or without lines...)
+* - 2006-10-10 - rewrite for php5
+*              - better support for history
+* - 2006-08-17 - new parameter $dfltIsYes for method msg_confirm()
+* - 2006-05-10 - progress_bar() and refresh_progress_bar() now support array(msg,tag) as $msg parameter
+* - 2006-05-04 - new parameters $styles and $return for console_app::print_table()
+* - 2006-05-02 - now read will return false on CTRL+D if property _captureEOT is false
+* - 2006-04-26 - call of console_app::read() as a static method will now autodetect and use the readline extension
+* - 2006-04-23 - now console_app::read() and console_app::msg_	read() even as a static method
+* - 2006-04-16 - now console_app::get_arg() can also retrieve unknown_args ($console_app->get_arg(0))
+* - 2006-04-15 - now auto add readline history if readline enable.
+*              - new parameter _captureEOT to capture EndOfTransmission signal (CTRL+d)
+* - 2006-04-14 - new property console_app::_lnOnRead to remove the automaticly added new line on read msg.
+*              - new methods progress_bar() and refresh_progress_bar()
+* - 2006-04-13 - now you can use "\n" in args descriptions
+*              - new method print_table() for table rendering
+* - 2006-02-08 - remove some E_NOTICE on previously added readline support
+* - 2006-02-03 - now can read multiple SHORT FLAG at once (ie: -AZEXC instead of -A -Z -E -X -C )
+* - 2006-01-30 - some visual amelioration on the display_help
+* - 2006-01-12 - new msg_read method
+* - 2005-12-29 - now use STDIN/STDOUT/STDERR and add a fancyerror parameter
 * @example
 * @code
 # set the app
@@ -91,7 +92,7 @@ class console_app{
 		/** dbg method default styles */
 		'dbg'     => array(
 			'tag'       => 'bold|red',
-			'print_func'=> 'var_export',
+			'print_func'=> 'var_export', // one of print_r|var_export or any method that return a string representation of given var when called with arguments $var,$returnAsString=true
 			'breakStr'  => 'press enter to continue.',
 			'askexitStr'=> 'press enter to continue anything else to exit.',
 		),
@@ -886,7 +887,7 @@ class console_app{
 	*/
 	public static function show($var,$tag='bold|red',$exit=false){
 		$print_func = self::$dflt_styles['dbg']['print_func'];
-		console_app::tagged_string($print_func($var,1),$tag,1);
+		console_app::tagged_string($print_func($var,true),$tag,1);
 		if($exit) exit;
 	}
 
@@ -915,7 +916,7 @@ class console_app{
 		fwrite(STDOUT,$tagStart);
 		foreach($args as $i=>$a){
 			fwrite(STDOUT,($i?"\n":'')."Dbg($i):");
-			$print_func($a);
+			fwrite(STDOUT,$print_func($a,true));
 		}
 		fwrite(STDOUT,"\n---------------------------------------\n");
 		fwrite(STDOUT,$tagEnd);
