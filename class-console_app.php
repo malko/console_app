@@ -400,7 +400,7 @@ class console_app{
 	* You must call this method after args and flags definition and before any console_app::get_arg() call
 	* @param bool $dontDisplayHelp by passing this as true the app won't display the full help on invalid parameter
 	*/
-	public	function parse_args($dontDisplayHelp=false){
+	public function parse_args($dontDisplayHelp=false){
 		$this->args_parsed = true;
 		$argv = $_SERVER['argv'];
 		$argc = $_SERVER['argc'];
