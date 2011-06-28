@@ -6,6 +6,7 @@
 * @author jonathan.gotti@free.fr
 * @licence LGPL
 * @changelog
+* - 2011-06-28 - bug correction on parameters validation
 * - 2010-12-02 - make key=value options passing work with multiple values
 *              - replace split (deprecated) in favour of  preg_split
 * - 2010-12-01 - add support for key=value options passing (work with long and short option names but not with multiple values)
@@ -277,8 +278,8 @@ class console_app{
 		}else{
 			$this->_args[$longname]['dflt'] = $default;
 			$this->setted_args[$longname]   = $default;
-			if($valid_cb)
-				self::validate_arg($this->setted_args[$longname],$valid_cb,true);
+			/*if($valid_cb)
+				$this->validate_arg($longname,$valid_cb,true);*/
 		}
 		if(! is_null($shortname)){
 			$this->_args[$longname]['short'] = $shortname;
@@ -290,20 +291,22 @@ class console_app{
 	* if value is false the application will quit with an error message
 	* if true or null are returned then nothing happen
 	* any other values return by the callback will be returned by the method.
+	* @param string   $argname     name of the currently tested argument
 	* @param mixed    $arg      argument to perform validation on.
 	* @param callable $valid_cb a valid callable callback
 	* @return mixed or exit the application
 	*/
-	static public function validate_arg(&$arg,$valid_cb,$dontDisplayHelp=false){
-		$cb_ret = call_user_func($valid_cb,$arg);
+// 	public function validate_arg(&$arg,$valid_cb,$dontDisplayHelp=false){
+ 	public function validate_arg($argname,$valid_cb,$dontDisplayHelp=false){
+		$cb_ret = call_user_func($valid_cb,$this->setted_args[$argname]);
 		if($cb_ret===false){ # callback failed so display error message and then help
-			console_app::tagged_string("** '".$arg .' '.$argVal."' Invalid value given for $name **",'red|bold',1);
+			console_app::tagged_string("** '".$this->setted_args[$argname]."' Invalid value given for $argname **",'red|bold',1);
 			if(! $dontDisplayHelp )
 				return $this->display_help(-1); // exit program
 			console_app::msg(self::$dflt_styles['help']['msg']);
 			exit(-1);
 		}elseif(! in_array($cb_ret,array(true,null),true) ){ # callback returned a value so we override user value with this one
-			$arg = $cb_ret;     # get the args value
+			$this->setted_args[$argname] = $cb_ret;     # get the args value
 		}
 	}
 	/**
@@ -444,17 +447,7 @@ class console_app{
 					$this->setted_args[$name] = preg_split('/'.$this->_args[$name]['delim'].'/',$argVal);
 				}
 				if(isset($this->_args[$name]['validation_callback'])){ # run optionnal validation callback
-					self::validate_arg($this->setted_args[$name],$this->_args[$name]['validation_callback']);
-					#- $cb_ret = call_user_func($this->_args[$name]['validation_callback'],$this->setted_args[$name]);
-					#- if($cb_ret===false){ # callback failed so display error message and then help
-						#- console_app::tagged_string("** '".$arg .' '.$argVal."' Invalid value given for $name **",'red|bold',1);
-						#- if(! $dontDisplayHelp )
-							#- return $this->display_help(-1);
-						#- console_app::msg(self::$dflt_styles['help']['msg']);
-						#- exit(-1);
-					#- }elseif(! in_array($cb_ret,array(true,null),true) ){ # callback returned a value so we override user value with this one
-						#- $this->setted_args[$name] = $cb_ret;     # get the args value
-					#- }
+					$this->validate_arg($name,$this->_args[$name]['validation_callback']);
 				}
 			}elseif( isset($this->known_flags[$arg]) ){     # known flag
 				$name = $this->known_flags[$arg]; # get arg name
