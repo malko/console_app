@@ -6,6 +6,7 @@
 * @author jonathan.gotti@free.fr
 * @licence LGPL
 * @changelog
+* - 2011-10-19 - bug correction on flags parsing
 * - 2011-06-28 - bug correction on parameters validation
 * - 2010-12-02 - make key=value options passing work with multiple values
 *              - replace split (deprecated) in favour of  preg_split
@@ -433,11 +434,11 @@ class console_app{
 					}
 				}
 			}
-			if( null===$argVal ){
-				$argVal= isset($argv[++$i])?$argv[$i]:null;
-			}
 
 			if( isset($this->known_args[$arg]) ){ # Known argument so we process it
+				if( null===$argVal ){
+					$argVal= isset($argv[++$i])?$argv[$i]:null;
+				}
 				$name = $this->known_args[$arg]; # get arg name
 				# get his value
 				if( $argVal === null ) continue;
