@@ -969,7 +969,7 @@ class console_app{
 	public static function dbg(){
 		$args  = func_get_args();
 
-		if( count($args)>1 && in_array($args[count($args)-1],array('exit','break','askexit')) )
+		if( count($args)>1 && is_string($args[count($args)-1]) && in_array($args[count($args)-1],array('exit','break','askexit')) )
 			$exitOrBreak = array_pop($args);
 
 		$print_func = self::$dflt_styles['dbg']['print_func'];
